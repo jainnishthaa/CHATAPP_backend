@@ -71,17 +71,18 @@ export const getFetchChat = responseHandler(async (req, res, next) => {
 });
 
 export const postCreateGroups = responseHandler(async (req, res, next) => {
-  if (!req.body.users || !req.body.name) {
+  if (!req.body.name) {
     return res.status(400).send({ message: "Data is insufficient" });
   }
-  var users = JSON.parse(req.body.users);
-  users.push(req.user);
+  console.log(req.body.name);
+  var users = [];
+  users.push(req.user.userId);
   try {
     const groupChat = await Chat.create({
       chatName: req.body.name,
       users: users,
       isGroupChat: true,
-      groupAdmin: req.user,
+      groupAdmin: req.user.userId,
     });
     const fullGroupChat = await Chat.findOne({ _id: groupChat._id })
       .populate("users", "-refreshToken -password")

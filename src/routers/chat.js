@@ -7,6 +7,6 @@ router.post("/accessChat",postAccessChat);
 router.post("/createGroups",postCreateGroups);
 router.get("/fetchGroups",getFetchGroups);
 router.put("/groupExit",putGroupExit);
-router.put("addSelfToGroup",putAddSelfToGroup);
+router.put("/addSelfToGroup",putAddSelfToGroup);
 
 export default router;

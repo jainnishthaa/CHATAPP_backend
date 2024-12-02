@@ -8,6 +8,8 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { verifyJWT } from "./utils/verifyJWT.js";
+// import http from 'http';
+// import socketIo from 'socket.io';
 
 const app=express();
 
@@ -27,6 +29,16 @@ app.use("/", loginRouter);
 app.use("/user",verifyJWT,userRouter);
 app.use("/chat",verifyJWT,chatRouter);
 app.use("/message",verifyJWT,messageRouter);
+
+// const server = http.createServer(app);
+// const io = socketIo(server);
+
+// io.on('connection', (socket) => {
+//   console.log('A user connected');
+//   socket.on('disconnect', () => {
+//       console.log('User disconnected');
+//   });
+// });
 
 mongoose
   .connect(process.env.MONGO_URI)
