@@ -24,9 +24,9 @@ const generateAccessTokenAndRefereshToken = async (userId) => {
 
 export const postSignup = responseHandler(async (req, res, next) => {
   const { name, email, password } = req.body;
-  console.log(name);
-  console.log(email);
-  console.log(password);
+  // console.log(name);
+  // console.log(email);
+  // console.log(password);
   if (!name || !email || !password) {
     throw new ErrorHandler(401, "All fields are required");
   }
@@ -68,7 +68,7 @@ export const postSignup = responseHandler(async (req, res, next) => {
         message: "Successfully Signed Up",
       });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     throw new ErrorHandler(
       error.statusCode || 500,
       error.message || "Error while new signup"
@@ -115,10 +115,36 @@ export const postLogin = responseHandler(async (req, res, next) => {
         message: "Successfully Logged In",
       });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     throw new ErrorHandler(
       error.statusCode || 500,
       error.message || "cannot log in user"
+    );
+  }
+});
+
+export const getLogout = responseHandler(async (req, res, next) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if(!refreshToken){
+      throw new ErrorHandler(400, "You are not logged in");
+    }
+    const user = await User.findOne({refreshToken});
+    if (!user) {
+      throw new ErrorHandler(400,"User not found");
+    }
+    const options = {
+      httpOnly: true,
+    };
+    res
+      .clearCookie("accessToken", options)
+      .clearCookie("refreshToken", options)
+      .status(200)
+      .json({ message: "Successfully logged out" });
+  } catch (error) {
+    throw new ErrorHandler(
+      error.statusCode || 500,
+      error.message || "Can't logout"
     );
   }
 });

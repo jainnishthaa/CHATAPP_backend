@@ -10,6 +10,9 @@ export const getAllMessages = responseHandler(async (req, res, next) => {
       .populate("sender", "name email")
       .populate("receiver")
       .populate("chat");
+      // if(!messages){
+      //   return res.status(404).json({ message: "No messages found" });
+      // }
     res.status(200).json(messages);
   } catch (error) {
     throw new ErrorHandler(
@@ -25,6 +28,7 @@ export const postSendMessage = responseHandler(async (req, res, next) => {
     if (!content || !chatId) {
       throw new ErrorHandler(400, "content and chatId are required");
     }
+    console.log(req.user);
     var newMessage = {
       sender: req.user.userId,
       content: content,
@@ -33,12 +37,9 @@ export const postSendMessage = responseHandler(async (req, res, next) => {
     var message = await Message.create(newMessage);
     message = await message.populate("sender", "name");
     message = await message.populate("chat");
-    message = await message.populate("reciever");
-    message = await message.populate(message, {
-      path: "chat.users",
-      select: "name email",
-    });
+    message = await message.populate("receiver");
     await Chat.findByIdAndUpdate(req.body.chatId, { latestMessage: message });
+    console.log(message);
     res.status(201).json(message);
   } catch (error) {
     throw new ErrorHandler(

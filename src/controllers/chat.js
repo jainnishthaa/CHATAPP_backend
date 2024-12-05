@@ -7,7 +7,7 @@ export const postAccessChat = responseHandler(async (req, res, next) => {
   // console.log(req);
   try {
     const { otherUserId } = req.body;
-    console.log(otherUserId);
+    // console.log(otherUserId);
     if (!otherUserId) {
       throw new ErrorHandler(400, "user id not awailable");
     }
@@ -49,7 +49,7 @@ export const postAccessChat = responseHandler(async (req, res, next) => {
 
 export const getFetchChat = responseHandler(async (req, res, next) => {
   try {
-    console.log(req.user.userId)
+    // console.log(req.user.userId)
     Chat.find({ users: {  $in: req.user.userId } })
       .populate("users", "-refreshToken -password")
       .populate("groupAdmin", "-refreshToken -password")
@@ -60,6 +60,7 @@ export const getFetchChat = responseHandler(async (req, res, next) => {
           path: "latestMessage.sender",
           select: "name email",
         });
+        // console.log(results);
         res.status(200).json(results);
       });
   } catch (error) {
@@ -74,7 +75,7 @@ export const postCreateGroups = responseHandler(async (req, res, next) => {
   if (!req.body.name) {
     return res.status(400).send({ message: "Data is insufficient" });
   }
-  console.log(req.body.name);
+  // console.log(req.body.name);
   var users = [];
   users.push(req.user.userId);
   try {
