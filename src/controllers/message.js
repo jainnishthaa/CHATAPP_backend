@@ -24,13 +24,17 @@ export const getAllMessages = responseHandler(async (req, res, next) => {
 
 export const postSendMessage = responseHandler(async (req, res, next) => {
   try {
-    const { content, chatId } = req.body;
-    if (!content || !chatId) {
+    const { content, chatId, senderId } = req.body;
+    console.log(senderId);
+    console.log(content);
+    console.log(chatId);
+    if (!content || !chatId || !senderId) {
       throw new ErrorHandler(400, "content and chatId are required");
     }
-    console.log(req.user);
+    
     var newMessage = {
-      sender: req.user.userId,
+      sender: senderId,
+      // sender:req.user.userId,
       content: content,
       chat: chatId,
     };

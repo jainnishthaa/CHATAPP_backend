@@ -6,6 +6,8 @@ import User from "../Models/userModel.js";
 export const verifyJWT = responseHandler(async function (req, res, next) {
   const incomingAccessToken = req.cookies.accessToken;
   const incomingRefreshToken = req.cookies.refreshToken;
+  // console.log(incomingAccessToken);y
+
   if (!incomingAccessToken && !incomingRefreshToken) {
     throw new ErrorHandler(401, "you are not logged in!");
   }

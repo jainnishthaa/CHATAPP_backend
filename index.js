@@ -1,22 +1,31 @@
 import express from "express";
 import mongoose from "mongoose";
-import userRouter from "./routers/user.js";
-import loginRouter from "./routers/login.js";
-import chatRouter from "./routers/chat.js";
-import messageRouter from "./routers/message.js";
+import userRouter from "./src/routers/user.js";
+import loginRouter from "./src/routers/login.js";
+import chatRouter from "./src/routers/chat.js";
+import messageRouter from "./src/routers/message.js";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import { verifyJWT } from "./utils/verifyJWT.js";
+import { verifyJWT } from "./src/utils/verifyJWT.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
 
 const app = express();
 
+const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000','https://finance-tracker-frontend-nu.vercel.app']; // Frontend origins
+
 app.use(
   cors({
-    origin: process.env.CORS_ORIGINS,
-    credentials: true,
+    origin: function (origin, callback) {
+      // Allow requests from specific origins or requests without an origin (e.g., Postman)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true, 
   })
 );
 
@@ -28,12 +37,19 @@ app.use(cookieParser());
 const httpServer = createServer(app);
 const io = new Server(httpServer,{
   cors: {
-    origin: process.env.CORS_ORIGINS,
+    origin: function (origin, callback) {
+      // Allow requests from specific origins or requests without an origin (e.g., Postman)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
   }
 });
 
 io.on("connection", (socket) => {
-  console.log("a user connected");
+  console.log("A user connected:", socket.id);
   socket.on("setup", (user) => {
     if (!user || !user._id) {
       return console.log("Invalid user data received during setup.");
@@ -59,9 +75,11 @@ io.on("connection", (socket) => {
       return console.log("chat or chat.users not defined");
     }
     chat.users.forEach((user) => {
-      if (user._id == newMessageStatus.sender._id) return;
-      socket.in(user._id).emit("message received", newMessageStatus);
-      console.log(`Message sent to user: ${user._id}`);
+      // console.log(newMessageStatus.sender._id);
+      if (user !== newMessageStatus.sender._id) {
+      socket.in(user).emit("message received", newMessageStatus);
+      console.log(`Message sent to user: ${user}`);
+      }
     });
 
     socket.on("leave chat", (room) => {
@@ -83,9 +101,9 @@ app.use("/chat", verifyJWT, chatRouter);
 app.use("/message", verifyJWT, messageRouter);
 
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect("mongodb+srv://nishthaa2003:nishthaa2003@chatappdb.fn5on.mongodb.net/?retryWrites=true&w=majority&appName=ChatAppDB")
   .then(() => {
-    app.listen(process.env.PORT, () => {
+    httpServer.listen(process.env.PORT, () => {
       console.log("http://localhost:" + process.env.PORT);
     });
   })

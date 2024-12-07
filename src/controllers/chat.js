@@ -14,8 +14,8 @@ export const postAccessChat = responseHandler(async (req, res, next) => {
     var isChat = await Chat.find({
       isGroupChat: false,
       $and: [
-        { users: { $in: req.user.userId  } },
-        { users: {  $in: otherUserId  } },
+        { users: { $in: req.user.userId } },
+        { users: { $in: otherUserId } },
       ],
     })
       .populate("users", "-refreshToken -password")
@@ -50,7 +50,7 @@ export const postAccessChat = responseHandler(async (req, res, next) => {
 export const getFetchChat = responseHandler(async (req, res, next) => {
   try {
     // console.log(req.user.userId)
-    Chat.find({ users: {  $in: req.user.userId } })
+    Chat.find({ users: { $in: req.user.userId } })
       .populate("users", "-refreshToken -password")
       .populate("groupAdmin", "-refreshToken -password")
       .populate("latestMessage")
@@ -112,21 +112,33 @@ export const getFetchGroups = responseHandler(async (req, res, next) => {
 export const putGroupExit = responseHandler(async (req, res, next) => {
   try {
     const { chatId, userId } = req.body;
-    const removed = await Chat.findByIdAndUpdate(
-      chatId,
-      {
-        $pull: { users: userId },
-      },
-      {
-        new: true,
-      }
-    )
+    const chat = await Chat.findById(chatId);
+    if (!chat) {
+      throw new ErrorHandler(404, "Chat not found");
+    }
+    if (chat.isGroupChat) {
+      const updatedChat = await Chat.findByIdAndUpdate(
+        chatId,
+        {
+          $pull: {
+            users: userId,
+          },
+        },
+        { new: true }
+      )
       .populate("users", "-refreshToken -password")
       .populate("groupAdmin", "-refreshToken -password");
-    if (!removed) {
-      throw new ErrorHandler(404, "Chat not found");
-    } else {
-      res.json(removed);
+      if(!updatedChat){
+        throw new ErrorHandler(404, "Fsiled to exit group chat");
+      }
+      res.status(200).json(updatedChat);
+    }
+    else{
+      const deleteChat=await Chat.findByIdAndDelete(chatId);
+      if(!deleteChat){
+        throw new ErrorHandler(404, "Failed to delete chat");
+      }
+      res.status(200).json({message:"Chat delted successfully"});
     }
   } catch (error) {
     throw new ErrorHandler(
