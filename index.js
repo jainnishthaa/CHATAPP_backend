@@ -46,7 +46,8 @@ const io = new Server(httpServer,{
       }
     },
     credentials: true,
-  }
+  },
+  transports: ["websocket", "polling"]
 });
 
 io.on("connection", (socket) => {
