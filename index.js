@@ -13,21 +13,20 @@ import { Server } from "socket.io";
 
 const app = express();
 
-const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000','https://chatapp-frontend-black.vercel.app']; // Frontend origins
+const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://chatapp-frontend-black.vercel.app'];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests from specific origins or requests without an origin (e.g., Postman)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true, 
-  })
-);
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 app.use(bodyParser.json({ limit: "4kb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "4kb" }));
@@ -35,19 +34,10 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 const httpServer = createServer(app);
-const io = new Server(httpServer,{
-  cors: {
-    origin: function (origin, callback) {
-      // Allow requests from specific origins or requests without an origin (e.g., Postman)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
-  },
-  transports: ["websocket", "polling"]
+const io = new Server(httpServer, {
+  cors: corsOptions,
+  transports: ["websocket", "polling"],
+  path:"/socket.io"
 });
 
 io.on("connection", (socket) => {
