@@ -13,7 +13,7 @@ import { Server } from "socket.io";
 
 const app = express();
 
-const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000']; // Frontend origins
+const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000','https://chatapp-frontend-black.vercel.app']; // Frontend origins
 
 app.use(
   cors({
